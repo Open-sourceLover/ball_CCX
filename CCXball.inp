@@ -1,0 +1,74 @@
+*HEADING
+**ball falling on plate.
+**dynamic contact.
+**                   for complete calculation change
+**                   step time from 0.001 to 1.00
+***
+*INCLUDE,INPUT=NballAll.inp
+*INCLUDE,INPUT=NballSurface.inp
+*INCLUDE,INPUT=Eball.inp
+*INCLUDE,INPUT=NfloorAll.inp
+*INCLUDE,INPUT=Efloor.inp
+***
+*MATERIAL,NAME=gummi
+*ELASTIC
+1000.0,0.3
+*DENSITY
+2.5E-09
+***
+*SOLID SECTION, ELSET=Eball, MATERIAL=gummi
+*SHELL SECTION, ELSET=Efloor, MATERIAL=gummi
+0.01
+*******************************
+*** Create Element based surface in the 
+*** Positive(POS) Normal Direction
+*** on shell elements of floor
+*SURFACE, NAME=Sfloor,TYPE=ELEMENT
+Efloor, SPOS
+***
+*SURFACE, NAME=Sball,TYPE=NODE
+NballSurface
+***
+**Create a contact pair consisting of 
+**Sball as dependent(Slave) surface and
+**Sfloor as independent(Master) surface
+*CONTACT PAIR,INTERACTION=CONTACT
+Sball,Sfloor
+***
+*SURFACE INTERACTION, NAME=CONTACT
+*SURFACE BEHAVIOR,PRESSURE-OVERCLOSURE=EXPONENTIAL
+0.001, 1.0
+***
+*******************************
+*BOUNDARY
+Nfloor,1,6
+***
+***Assigns the initial velocity 100.0 to degrees
+***of freedom 1 of node set NballAll
+*INITIAL CONDITIONS, TYPE=VELOCITY
+NballAll,1,100.0
+***
+*STEP,NLGEOM,INC=100000
+***
+***
+**Defines an implicit dynamic procedure
+**The starting increment has a size 1.0E-03,
+**the subsequent increments should not have
+** a size smaller than 1.0E-09 or bigger than 
+**2.0E-03. The step size is 1.0
+*DYNAMIC
+1.0E-03,1.0E-03,1.0E-09,2.0E-03
+***
+*DLOAD
+Eball,GRAV,9810.0,0.0,0.0,-1.0
+***
+***TIME POINTS,NAME=TimeN1,GENERATE
+***0.0,1.0,1.0E-03
+***
+***
+**NODE PRINT,NSET=NballAll, TIME POINTS=TimeN1
+*NODE PRINT,NSET=NballAll
+U
+***
+*END STEP
+
